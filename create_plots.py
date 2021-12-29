@@ -8,8 +8,6 @@ from scipy.cluster.hierarchy import dendrogram
 from sklearn.cluster import AgglomerativeClustering
 
 
-
-
 def createDataset(xstart, xend, ystart, yend):
     x = []
     y = []
