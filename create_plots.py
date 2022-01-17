@@ -8,7 +8,7 @@ from scipy.cluster.hierarchy import dendrogram
 from sklearn.cluster import AgglomerativeClustering
 
 
-def createDataset(xstart, xend, ystart, yend):
+def createDataset(xstart, xend, ystart, yend, addNoise=False):
     x = []
     y = []
     p = [[0.00 for _ in range(0, 50)] for _ in range(0, 50)]
@@ -19,16 +19,31 @@ def createDataset(xstart, xend, ystart, yend):
 
     for j in range(0, 200):
         y.append(random.randint(ystart, yend))
-
-    for i in range(ystart, yend):
-        for j in range(xstart, xend):
-            p[i][j] = 0.025
-
+    
+    buckets = [[0 for _ in range(5)] for _ in range(5)]
+    
+    for x_e, y_e in zip(x, y):
+        i = (x_e // 10)
+        j = (y_e // 10)
+        if i >= 5:
+            i = 4
+        if j >= 5:
+            j = 4
+        buckets[i][j] += 1
+    
+    for i in range(len(p)):
+        for j in range(len(p[0])):
+            prob = buckets[i // 10][j // 10]  / 200.0
+            p[j][i] = prob
 
     x = np.array(x)
     y = np.array(y)
     p = np.array(p)
     
+    if addNoise:
+        mu, sigma = 0, 0.1
+        noise = np.random.normal(mu, sigma, y.shape)
+        y = y + noise
     return x, y, p
 
 
@@ -54,7 +69,7 @@ z2 = []
 majorTicks = np.arange(0, 50, 10)
 fig, axs = plt.subplots(2, 2)
 
-x, y, p = createDataset(0, 25, 25, 50)
+x, y, p = createDataset(0, 25, 25, 50, addNoise=True)
 x[198] = 13
 x[199] = 46
 y[198] = 13
@@ -63,7 +78,7 @@ sp = createSubPlot(0, 0, x, y, p, 't=[0, 3000]', majorTicks)
 x2.extend(x)
 y2.extend(y)
 
-x, y, p = createDataset(25, 50, 25, 50)
+x, y, p = createDataset(25, 50, 25, 50, addNoise=True)
 x[198] = 13
 x[199] = 46
 y[198] = 46
@@ -72,7 +87,7 @@ sp = createSubPlot(0, 1, x, y, p, 't=[3001, 6000]', majorTicks)
 x2.extend(x)
 y2.extend(y)
 
-x, y, p = createDataset(0, 25, 0, 25)
+x, y, p = createDataset(0, 25, 0, 25, addNoise=True)
 x[198] = 13
 x[199] = 32
 y[198] = 46
@@ -81,7 +96,7 @@ sp = createSubPlot(1, 0, x, y, p, 't=[6001, 9000]', majorTicks)
 x2.extend(x)
 y2.extend(y)
 
-x, y, p = createDataset(25, 50, 0, 25)
+x, y, p = createDataset(25, 50, 0, 25, addNoise=True)
 x[198] = 13
 x[199] = 32
 y[198] = 46
@@ -91,7 +106,7 @@ x2.extend(x)
 y2.extend(y)
 
 cb = fig.colorbar(sp, label='P', ax=axs.ravel().tolist(), orientation="horizontal")
-sp.set_clim(0.00, 0.02)
+sp.set_clim(0.00, 0.2)
 fig.set_figheight(10)
 plt.savefig('part_a.png')
 plt.clf()
