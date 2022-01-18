@@ -1,12 +1,56 @@
 import matplotlib.pyplot as plt
+import math
 import numpy as np
 import random
 import seaborn as sns
 
+from sys import maxsize
+from itertools import permutations
 from mpl_toolkits.mplot3d import Axes3D
 from scipy.cluster.hierarchy import dendrogram
 from sklearn.cluster import AgglomerativeClustering
 
+
+def travellingSalesmanProblem(graph, s, V):
+    vertex = []
+    for i in range(V):
+        if i != s:
+            vertex.append(i)
+ 
+    min_path = maxsize
+    next_permutation=permutations(vertex)
+    for i in next_permutation:
+ 
+        # store current Path weight(cost)
+        current_pathweight = 0
+ 
+        # compute current path weight
+        k = s
+        for j in i:
+            current_pathweight += graph[k][j]
+            k = j
+        current_pathweight += graph[k][s]
+ 
+        # update minimum
+        min_path = min(min_path, current_pathweight)
+         
+    return min_path
+
+
+def create_graph(x, y):
+    g = [[0 for _ in range(len(x))] for _ in range(len(y))]
+    
+    i = -1
+    j = -1
+    for x1, y1 in zip(x, y):
+        i += 1
+        j = -1
+        for x2, y2 in zip(x, y):
+            j += 1    
+            if i != j:
+                dist = math.sqrt(math.pow(x2 - x1, 2) + math.pow(y2 - y1, 2) * 1.0)
+                g[i][j] = dist
+    return g         
 
 def createDataset(xstart, xend, ystart, yend, addNoise=False):
     x = []
@@ -74,6 +118,10 @@ x[198] = 13
 x[199] = 46
 y[198] = 13
 y[199] = 18
+
+g = create_graph(x, y)
+minPath = travellingSalesmanProblem(g, 0, len(g))
+
 sp = createSubPlot(0, 0, x, y, p, 't=[0, 3000]', majorTicks)
 x2.extend(x)
 y2.extend(y)
