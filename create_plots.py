@@ -18,9 +18,10 @@ def travellingSalesmanProblem(graph, s, V):
             vertex.append(i)
  
     min_path = maxsize
+    path = None
     next_permutation=permutations(vertex)
     for i in next_permutation:
- 
+        
         # store current Path weight(cost)
         current_pathweight = 0
  
@@ -31,10 +32,11 @@ def travellingSalesmanProblem(graph, s, V):
             k = j
         current_pathweight += graph[k][s]
  
-        # update minimum
+        if current_pathweight <= min_path:
+            path = i
         min_path = min(min_path, current_pathweight)
          
-    return min_path
+    return path, min_path
 
 
 def create_graph(x, y):
@@ -113,15 +115,32 @@ z2 = []
 majorTicks = np.arange(0, 50, 10)
 fig, axs = plt.subplots(2, 2)
 
-x, y, p = createDataset(0, 25, 25, 50, addNoise=True)
+x, y, p = createDataset(0, 25, 25, 50, addNoise=False)
 x[198] = 13
 x[199] = 46
 y[198] = 13
 y[199] = 18
 
-g = create_graph(x, y)
-minPath = travellingSalesmanProblem(g, 0, len(g))
+# local hacks here for experimentation
+# Sliced lists to 10 points only
+g = create_graph(x[:10], y[:10])
+path, minPath = travellingSalesmanProblem(g, 0, len(g))
+print("Path:{}".format(path))
+print("Total cost of path:{}".format(minPath))
 
+mu, sigma = 5, 0.5  # Mean and Variance can be altered here
+noise = np.random.normal(mu, sigma, y.shape)
+y = y + noise
+
+g = create_graph(x[:10], y[:10])
+path, minPath = travellingSalesmanProblem(g, 0, len(g))
+print("Path:{}".format(path))
+print("Total cost of path:{}".format(minPath))
+
+# Uncomment this part for graph plotting. 
+# Will not work out of the box
+# Have to update the local hacks above
+"""
 sp = createSubPlot(0, 0, x, y, p, 't=[0, 3000]', majorTicks)
 x2.extend(x)
 y2.extend(y)
@@ -229,3 +248,4 @@ plot_dendrogram(model, truncate_mode="level")
 plt.axis('off')
 plt.savefig("part_c.png")
 plt.clf()
+"""
